@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head> <title>あんしん詐欺チェッカー | ご高齢者向けメッセージ安全確認ツール</title>
+<meta name="description" content="怪しいSMSやLINEの文章を貼り付けるだけで、詐欺の危険性をAIが自動判定します。ご高齢の方でも使いやすい大きな文字と簡単な操作。">
+<meta name="keywords" content="詐欺チェック,SMS詐欺,フィッシング詐欺,高齢者,防犯">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>あんしん詐欺チェッカー Pro</title>
+<style>
+  :root {
+    --primary: #004a99;      /* 信頼のネイビーブルー */
+    --secondary: #0078d4;    /* 清潔感のあるブルー */
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #1a202c;
+    --text-sub: #4a5568;
+    --danger: #e53e3e;       /* 警告の赤 */
+    --warning: #dd6b20;      /* 注意のオレンジ */
+    --safe: #38a169;         /* 安全の緑 */
+    --accent: #edf2f7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.7;
+    font-size: 18px;
+    padding-bottom: 50px;
+  }
+
+  /* ヘッダー：お役所風の堅実さとモダンさを両立 */
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 25px 0;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .container {
+    max-width: 850px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  /* 導入説明 */
+  .hero-guide {
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 30px;
+    border-left: 8px solid var(--secondary);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  }
+  .hero-guide p {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.1rem;
+  }
+
+  /* 入力エリア */
+  .input-section {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid var(--accent);
+  }
+  .input-label {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    display: block;
+    color: var(--primary);
+  }
+  textarea {
+    width: 100%;
+    height: 220px;
+    padding: 20px;
+    border: 2px solid #cbd5e0;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    background-color: #fdfdfd;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    resize: none;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.1);
+  }
+
+  /* ボタン */
+  .btn-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+  }
+  .btn {
+    padding: 18px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-check {
+    flex: 3;
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 6px 15px rgba(0, 74, 153, 0.2);
+  }
+  .btn-check:hover { background-color: var(--secondary); transform: translateY(-2px); }
+  .btn-clear {
+    flex: 1;
+    background-color: #edf2f7;
+    color: #4a5568;
+  }
+  .btn-clear:hover { background-color: #e2e8f0; }
+
+  /* 判定結果エリア */
+  #result-panel {
+    display: none;
+    margin-top: 40px;
+    animation: fadeIn 0.5s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    border: 4px solid var(--accent);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+  }
+  .status-label { font-size: 1.1rem; font-weight: 700; color: var(--text-sub); }
+  .status-text { font-size: 2.8rem; font-weight: 900; margin: 10px 0; line-height: 1.2; }
+  
+  /* メーター */
+  .meter-box {
+    margin: 30px 0;
+    background: #f7fafc;
+    padding: 20px;
+    border-radius: 16px;
+  }
+  .meter-label { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; margin-bottom: 6px;}
+  .meter-bg { width: 100%; height: 14px; background: #e2e8f0; border-radius: 7px; overflow: hidden; margin-bottom: 15px; }
+  .meter-fill { height: 100%; width: 0%; transition: width 1s cubic-bezier(0.22, 1, 0.36, 1); }
+
+  /* アドバイス */
+  .advice-banner {
+    padding: 25px;
+    border-radius: 16px;
+    margin: 30px 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  /* 証拠のハイライト */
+  .evidence-section {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+  .evidence-title { background: var(--accent); padding: 15px 25px; font-weight: 800; border-bottom: 1px solid var(--border); }
+  .evidence-text { padding: 25px; white-space: pre-wrap; word-break: break-all; font-size: 1.1rem; }
+  .hl-bad { background-color: #fff5f5; color: #c53030; font-weight: 800; padding: 2px 4px; border-radius: 4px; border-bottom: 2px solid #feb2b2; }
+  .hl-url { background-color: #ebf8ff; color: #2b6cb0; text-decoration: underline; font-weight: 800; }
+
+  /* 公的機関リンク：高齢者向けに大きく分かりやすく */
+  .contact-section {
+    background-color: #fffaf0;
+    border: 3px solid #fbd38d;
+    padding: 35px;
+    border-radius: 24px;
+    text-align: center;
+  }
+  .contact-section h3 { color: #9c4221; font-size: 1.4rem; font-weight: 900; margin-bottom: 20px; }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  @media (min-width: 600px) { .contact-grid { grid-template-columns: 1fr 1fr; } }
+  .contact-card {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--text-main);
+    border: 2px solid #feebc8;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .contact-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #f6ad55; }
+  .contact-card span { font-size: 2.5rem; }
+  .contact-card b { font-size: 1.3rem; color: #7b341e; }
+  .contact-card i { font-style: normal; font-size: 0.9rem; color: #9c4221; font-weight: 700; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span>🛡️</span> あんしん詐欺チェッカー Pro
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero-guide">
+    <p>怪しいメール、SMS、LINEが届いたら、まずはここで確認しましょう。</p>
+    <span style="font-size: 0.9rem; color: #718096;">※入力された文章は外部に送信されません。</span>
+  </div>
+
+  <div class="input-section">
+    <label class="input-label">メッセージの内容を貼り付けてください</label>
+    <textarea id="inputText" placeholder="（例）お客様のアカウントが凍結されました。至急、以下のリンクから本人確認を行ってください。"></textarea>
+    
+    <div class="btn-group">
+      <button class="btn btn-check" onclick="runAnalysis()">🔍 安全性をチェックする</button>
+      <button class="btn btn-clear" onclick="clearAll()">消す</button>
+    </div>
+  </div>
+
+  <div id="result-panel">
+    <div class="result-card" id="mainResult">
+      <div class="status-label">AI解析による判定</div>
+      <div class="status-text" id="statusTitle">判定中...</div>
+      
+      <div class="advice-banner" id="adviceBanner"></div>
+
+      <div class="meter-box">
+        <div class="meter-label"><span>🚨 詐欺の手口・脅しの要素</span> <span id="valUrg">0%</span></div>
+        <div class="meter-bg"><div id="barUrg" class="meter-fill" style="background-color: var(--danger);"></div></div>
+        
+        <div class="meter-label"><span>💰 お金・当選・偽の誘惑</span> <span id="valScam">0%</span></div>
+        <div class="meter-bg"><div id="barScam" class="meter-fill" style="background-color: var(--warning);"></div></div>
+        
+        <div class="meter-label"><span>🌐 偽サイト・特殊な詐欺</span> <span id="valCrypto">0%</span></div>
+        <div class="meter-bg"><div id="barCrypto" class="meter-fill" style="background-color: #805ad5;"></div></div>
+      </div>
+    </div>
+
+    <div class="evidence-section" id="evidenceBox">
+      <div class="evidence-title">👀 危険と判断された箇所</div>
+      <div class="evidence-text" id="evidenceContent"></div>
+    </div>
+
+    <div class="contact-section">
+      <h3>一人で悩まず、こちらへお電話を</h3>
+      <div class="contact-grid">
+        <a href="tel:188" class="contact-card">
+          <span>📞</span>
+          <b>消費者ホットライン</b>
+          <i>局番なしの188番</i>
+        </a>
+        <a href="tel:9110" class="contact-card">
+          <span>👮</span>
+          <b>警察の相談窓口</b>
+          <i>#9110番</i>
+        </a>
+      </div>
+      <p style="margin-top: 20px; font-size: 0.85rem; font-weight: 700; color: #7b341e;">
+        ※通話料が発生する場合があります。お急ぎの事件・事故は110番へ。
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 過去の全キーワードを統合（既存ワード完全保持＋拡張）
+const dicUrg = [
+  "緊急", "至急", "重要", "最終通知", "法的措置", "アカウント凍結", "異常検知",
+  "本人確認", "未払い", "訴訟開始", "差し押さえ", "強制執行", "裁判通知",
+  "利用停止", "24時間以内", "本日中", "期限切れ", "即時対応", "今すぐ",
+  "不正アクセス", "セキュリティ警告", "口座",
+  // ←ここまでが元のワード
+  // ここから追加分
+  "最終案内", "期限厳守", "強制停止", "永久利用不可", "異議申立て", "規約違反", 
+  "ポリシー違反", "不正利用", "アクセス制限", "機能停止", "アカウント保護のため",
+  "安全保護", "異常ログイン", "再認証手続き", "出金審査中", "資金保留",
+  "秘密保持", "内密情報", "VIP限定", "特別招待", "先着順", "残枠わずか",
+  "初回特典", "登録ボーナス", "完全無料", "追加費用なし", "元本保証", "損失補填",
+  "放置収益", "自動収益", "爆益銘柄", "上場確定", "短期高配当", "複利運用",
+  "ステーキング報酬", "APY200%", "流動性提供", "LP報酬", "DApp接続", "ウォレット承認",
+  "スマートコントラクト署名", "バックアップ復元", "二段階解除", "認証コード送信",
+  "確認番号", "代理受取人", "仲介報酬", "海外口座", "国際送金", "税金前払い",
+  "資金解放", "秘密契約", "独占契約", "内部情報", "非公開情報", "インサイダー情報",
+  "クジラ参入", "爆上げ確定", "底値保証", "プレセール枠", "ホワイトリスト",
+  "エアドロップ未請求", "限定配布", "マイクロタスク副業", "レビュー報酬",
+  "在宅モニター", "デポジット入金", "初期費用なし", "登録料必要", "友達紹介",
+  "公式パートナー", "認定企業", "金融ライセンス", "政府承認", "救済金申請",
+  "特例措置", "補償対象", "返金保証", "Apple当選", "iPhone当選", "Amazonギフト",
+  "送料負担", "NFTミント枠", "先行セール", "プレセール限定", "DEX上場", "CEX内定",
+  "ロックアップ解除", "トークン解放", "Telegram限定", "Telegram移動", "LINE限定",
+  "個別案内", "PayPay残高異常", "PayPay凍結", "Phantomウォレット", "Phantom接続", "万", "億", "リンク", URL",
+  "MetaMask承認", "TrustWallet接続"
+];
+  const dicScam = [
+  // 元のワード
+  "当選", "おめでとうございます", "高額当選", "賞金受取", "絶対儲かる", "確実利益",
+  "毎日1万円", "不労所得", "手数料先払い", "保証金入金", "ギフトカード購入", "番号送信",
+  "電子マネー", "税金前払い", "資金解放", "紹介報酬", "無料配布", "PayPay", "telegram",
+  // 追加ワード
+  "出金制限", "解除承認", "参加確定", "資金倍化", "短期回収", "安定配当", "放置運用",
+  "自動収益化", "高額報酬", "即日振込", "限定案件", "特別案内", "内部チャット", "非公開グループ",
+  "成功事例", "多数実績", "特別措置", "緊急支援", "特別還付", "税金還付", "ギフト受取",
+  "報酬分配", "優先分配", "初回限定", "特別付与", "友達紹介ボーナス", "VIP限定", "限定配布", "倍増", "簡単副業", "高額報酬案件", "自動収益化", "短期利益保証", "秘密案件",
+  "限定オファー", "VIP招待", "内部情報提供", "先行案件", "プレセール招待",
+  "登録ボーナス", "初回特典", "友達紹介報酬", "無料体験", "全額返金保証",
+  "利益確定", "元本保証", "短時間作業", "即日振込", "日給確定", "毎日配当",
+  "不労所得確定", "手順通りで安全", "秘密プロジェクト", "限定配布", "抽選当選",
+  "賞金受取", "ギフトカード送付", "特別配当", "追加投資不要", "内部グループ招待",
+  "特例措置", "緊急対応必須", "秘密保持契約", "匿名参加可", "資金倍増", "爆益保証",
+  "上場確定銘柄", "短期高配当", "完全自動化", "簡単操作で稼げる", "日給1万円保証",
+  "限定NFT受取", "エアドロップ未請求", "キャンペーン当選", "iPhone当選", "Amazonギフト",
+  "PayPayボーナス", "Telegram限定情報", "LINE限定案件", "MetaMask承認", "Phantom接続",
+  "TrustWallet接続", "DApp承認", "スマートコントラクト署名", "内部通達", "秘密配信",
+  "投資枠確保", "優先購入権", "非公開銘柄", "ホワイトリスト枠", "先行投資情報",
+  "量子AIシグナル", "勝率90%", "全額補償", "手数料無料", "高額配当", "即日利益"
+  "内部情報", "秘密保持", "エアドロップ未請求", "先行セール", "プレセール限定"
+];
+
+const dicCrypto = [
+  // 元のワード
+  "秘密鍵", "シードフレーズ", "ウォレット接続", "署名してください", "エアドロップ",
+  "KYC更新", "AML確認", "スマートコントラクト", "DApp接続", "仮想通貨",
+  "https", "爆上げ", "入金", "上場間近",
+  // 追加ワード
+  "MetaMask", "Phantom", "TrustWallet", "Ledger", "Trezor", "Solana", "Ethereum",
+  "Bitcoin", "USDT", "BNB", "XRP", "Cardano", "Dogecoin", "Shiba Inu", "Avalanche",
+  "Polygon", "Fantom", "Terra", "Sollet", "Solflare", "PhantomSwap", "Raydium",
+  "SushiSwap", "Uniswap", "PancakeSwap", "Opensea", "Magic Eden", "LooksRare",
+  "Foundation", "Rarible", "Ledger Live", "CoinGecko", "CoinMarketCap", "Crypto.com",
+  "TrustSwap", "Gate.io", "OKX", "Bybit Futures", "Binance Smart Chain", "Polygon Network",
+  "Solana Network", "Avalanche C-Chain", "Terra Station"
+];
+
+  const regexUrl = /(https?:\/\/[^\s]+)/g;
+  const regexPhone = /0\d{1,4}-?\d{1,4}-?\d{3,4}/g;
+
+  function runAnalysis() {
+    const text = document.getElementById('inputText').value.trim();
+    if (!text) { alert("文章を入力してください。"); return; }
+
+    const panel = document.getElementById('result-panel');
+    panel.style.display = 'block';
+
+    // 判定ロジック
+    let scoreUrg = 0, scoreScam = 0, scoreCrypto = 0;
+    let found = [];
+    let cleanText = text.replace(/[\s\u3000]/g, '');
+
+    dicUrg.forEach(w => { if(cleanText.includes(w)) { scoreUrg += 35; found.push(w); } });
+    dicScam.forEach(w => { if(cleanText.includes(w)) { scoreScam += 35; found.push(w); } });
+    dicCrypto.forEach(w => { if(cleanText.includes(w)) { scoreCrypto += 45; found.push(w); } });
+
+    const hasUrl = regexUrl.test(text);
+    if(hasUrl) { 
+      if(scoreUrg > 0) scoreUrg = 98;
+      if(scoreScam > 0) scoreScam = 98;
+      if(scoreCrypto > 0) scoreCrypto = 99;
+      scoreCrypto += 20; 
+    }
+
+    let total = Math.min(Math.max(scoreUrg, scoreScam, scoreCrypto), 100);
+    
+    // UI更新
+    const title = document.getElementById('statusTitle');
+    const banner = document.getElementById('adviceBanner');
+    const header = document.getElementById('mainResult');
+    
+    if (total >= 90) {
+      title.innerText = "🚨 極めて危険です！";
+      title.style.color = "var(--danger)";
+      header.style.borderColor = "var(--danger)";
+      banner.style.backgroundColor = "#fff5f5";
+      banner.style.color = "#c53030";
+      banner.style.border = "2px solid #feb2b2";
+      banner.innerHTML = "❌ <b>絶対にリンクを開いたり、返信してはいけません。</b><br>このメッセージは詐欺です。今すぐ削除して無視してください。";
+    } else if (total >= 40) {
+      title.innerText = "⚠️ 詐欺の疑いがあります";
+      title.style.color = "var(--warning)";
+      header.style.borderColor = "var(--warning)";
+      banner.style.backgroundColor = "#fffaf0";
+      banner.style.color = "#9c4221";
+      banner.style.border = "2px solid #fbd38d";
+      banner.innerHTML = "✋ <b>安易に信用しないでください。</b><br>公式のアプリや検索サイトから、自分で調べて確認してください。";
+    } else {
+      title.innerText = "✅ 安全な可能性が高い";
+      title.style.color = "var(--safe)";
+      header.style.borderColor = "var(--safe)";
+      banner.style.backgroundColor = "#f0fff4";
+      banner.style.color = "#276749";
+      banner.style.border = "2px solid #c6f6d5";
+      banner.innerHTML = "🔍 <b>今のところ危険は見つかりませんでした。</b><br>ただし、知らない相手からのリンクは常に警戒してください。";
+    }
+
+    setTimeout(() => {
+      document.getElementById('barUrg').style.width = Math.min(scoreUrg, 100) + "%";
+      document.getElementById('valUrg').innerText = Math.min(scoreUrg, 100) + "%";
+      document.getElementById('barScam').style.width = Math.min(scoreScam, 100) + "%";
+      document.getElementById('valScam').innerText = Math.min(scoreScam, 100) + "%";
+      document.getElementById('barCrypto').style.width = Math.min(scoreCrypto, 100) + "%";
+      document.getElementById('valCrypto').innerText = Math.min(scoreCrypto, 100) + "%";
+    }, 100);
+
+    // ハイライト生成
+    let html = text.replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t]));
+    found = [...new Set(found)];
+    found.forEach(w => { html = html.split(w).join(`<span class="hl-bad">${w}</span>`); });
+    html = html.replace(/(https?:\/\/[^\s<]+)/g, `<span class="hl-url">$1</span>`);
+    document.getElementById('evidenceContent').innerHTML = html;
+
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function clearAll() {
+    document.getElementById('inputText').value = '';
+    document.getElementById('result-panel').style.display = 'none';
+  }
+</script>
+</body>
+</html>
